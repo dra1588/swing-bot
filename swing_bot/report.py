@@ -10,6 +10,7 @@ from .config import Params, UNIVERSE
 
 DEV = ("2010-01-01", "2019-12-31")
 OOS = ("2020-01-01", "2026-11-20")
+DEV_HALVES = (("2010-01-01", "2014-12-31"), ("2015-01-01", "2019-12-31"))
 RESULT = Path("results/oos_result.json")
 
 
@@ -24,12 +25,27 @@ def _git_sha():
         return "unknown"
 
 
-def evaluate(frames, p, window, with_gate5=True):
+class WindowViolation(RuntimeError):
+    pass
+
+
+def _check_window(window, halves, oos):
+    """A development run must never evaluate any date in the out-of-sample window."""
+    if oos:
+        return
+    dates = [window[1]] + [d for h in halves for d in h]
+    if any(str(d) > DEV[1] for d in dates):
+        raise WindowViolation(f"development run touches dates after {DEV[1]}: {sorted(dates)[-1]}")
+
+
+def evaluate(frames, p, window, with_gate5=True, oos=False):
+    halves = robustness.HALVES if oos else DEV_HALVES
+    _check_window(window, halves, oos)
     res = backtest.run(frames, p, start=window[0], end=window[1])
     spy = frames[p.market_symbol]["close"].loc[window[0]:window[1]]
     g = metrics.gates(res, spy)
     if with_gate5:
-        g5 = robustness.gate5(frames, p, *window)
+        g5 = robustness.gate5(frames, p, *window, halves=halves)
         g["g5_robustness"] = {"value": {k: v["pass"] for k, v in g5["detail"].items()}, "pass": g5["pass"]}
     g["ALL_GATES_PASS"] = all(v["pass"] for k, v in g.items() if isinstance(v, dict) and "pass" in v)
     return g, res
@@ -60,7 +76,7 @@ def main(argv=None):
             raise OosAlreadyRun(f"{RESULT} exists: the out-of-sample run has already been used")
     window = OOS if a.oos else DEV
     frames, meta = data_mod.load(UNIVERSE, "2009-01-01", "2026-11-21", cache_dir=a.cache)
-    g, res = evaluate(frames, p, window)
+    g, res = evaluate(frames, p, window, oos=a.oos)
     out = table(g)
     print(out)
     if a.oos:

@@ -88,3 +88,17 @@ These make section 2 and 3 precise. They add no tuning freedom.
   window (2020-01-01 to 2023-06-30, and 2023-07-01 to 2026-11-20).
 - Universe survivorship: the list is as of 1 Jan 2020 while the development window starts in 2010, so the
   development results are biased upward. Only the out-of-sample result counts.
+
+---
+## v1.3 disclosure and result (25 Nov 2026)
+- **Protocol breach, disclosed.** The first `swing-dev` run (GitHub Actions run 45619506666, commit f4903e3) evaluated the
+  out-of-sample HALVES inside gate 5, because the halves were hard-coded to 2020-2026 regardless of mode. Its log showed
+  half 1 (2020-01-01..2023-06-30) = pass and half 2 (2023-07-01..2026-11-20) = fail. So the out-of-sample window is no
+  longer untouched; any later out-of-sample result must be read with that in mind. Fixed in the commit that adds this
+  note: development runs use development halves (2010-2014, 2015-2019) and the code refuses any date after 2019-12-31.
+- **Development-window result (2010-2019, same run).** Gate 1 pass (442 trades). Gate 2 FAIL (Sharpe 0.705 vs SPY 0.922).
+  Gate 3 pass (mean +1.19% per trade, 95% interval 0.41% to 2.10%). Gate 4 pass (max drawdown -19.2% vs SPY -19.3%).
+  Gate 6 pass (largest trade 13.5%, largest year 26.6% of profit). Gate 5 FAIL: all 8 parameter variants failed.
+  Note this window flatters the strategy (universe chosen as of 2020; survivorship).
+- **Decision rule applied.** Section 4 says: if any gate fails, stop and report. Gates 2 and 5 failed on the development
+  window, which is biased in the strategy's favour. No variant will be tried.

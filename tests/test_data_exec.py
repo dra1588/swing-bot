@@ -166,3 +166,22 @@ def test_fills_sync_into_ledger_once_and_update_positions(tmp_path):
     rows = list(ledger.rows(execute.BOOK))
     assert len(rows) == 1 and state["positions"][first["symbol"]]["entry"] == 111.0
     execute.reconcile(b, state)
+
+
+def test_dev_run_cannot_touch_the_oos_window():
+    from swing_bot import report
+    with pytest.raises(report.WindowViolation):
+        report._check_window(report.DEV, robustness.HALVES, oos=False)   # the old, leaking behaviour
+    report._check_window(report.DEV, report.DEV_HALVES, oos=False)       # the corrected halves are allowed
+    report._check_window(report.OOS, robustness.HALVES, oos=True)
+
+
+def test_dev_evaluate_never_backtests_after_2019(monkeypatch):
+    from swing_bot import backtest, report
+    seen = []
+    real = backtest.run
+    monkeypatch.setattr(backtest, "run", lambda d, p, start=None, end=None: seen.append(end) or real(d, p, start, end))
+    frames = {"SPY": bars(choppy(seed=10, sigma=0.01, drift=0.001), start="2010-01-01"),
+              "AAA": bars(choppy(seed=11), start="2010-01-01")}
+    report.evaluate(frames, P, report.DEV)
+    assert seen and all(str(e) <= report.DEV[1] for e in seen), seen
