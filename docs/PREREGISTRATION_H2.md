@@ -63,3 +63,22 @@ and only with your written approval and the legal and tax questions answered.
 ## 7. Build order (so a leak cannot recur)
 1. Tests for window enforcement and no-look-ahead month-end signals, written first.
 2. Engine and gates. 3. Development run (free to repeat). 4. Your go. 5. One holdout run.
+
+---
+## v1.1 result (25 Nov 2026): H2 DROPPED on the development window
+Source: GitHub Actions run 45622075478 (`h2-dev`, commit c903d7c), window 2007-01-01..2016-12-31, 120 months, all 36 tests passing
+in the same job. The holdout was NOT run and will not be run.
+
+| | Sharpe | Max drawdown | Final (from 1000) |
+|---|---|---|---|
+| H2 strategy | 0.427 | -15.7% | 1,326.8 |
+| 60/40 benchmark | 0.668 | -35.7% | 1,785.3 |
+| SPY buy-and-hold | 0.501 | -55.2% | 1,907.4 |
+
+Gates: 1 PASS (120 months). 2 PASS (drawdown 44% of the 60/40's). 3 FAIL (Sharpe 0.427 vs 0.668). 4 FAIL (bootstrap win rate 18%).
+5 FAIL (8-month, 12-month and doubled-cost variants failed; half 1 2007-2011 passed, half 2 2012-2016 failed).
+6 FAIL (one year provided 46.5% of profit).
+
+Reading: the drawdown half of the claim held clearly; the Sharpe half did not. Section 1 says failing either half drops H2.
+Per section 4, no variant will be tried (no cash interest, no other average lengths, no other ETFs). Any follow-up idea is a NEW
+hypothesis with its own preregistration, chosen knowing this result.
