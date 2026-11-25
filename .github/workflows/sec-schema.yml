@@ -1,0 +1,26 @@
+name: sec-schema
+# Prints the real structure of one SEC Insider Transactions quarterly file. Read-only; no trading logic.
+# Set the repository variable SEC_USER_AGENT to a project name plus a contact address you are happy to expose.
+on:
+  workflow_dispatch:
+    inputs:
+      quarter:
+        description: "Quarter, e.g. 2015q1"
+        required: false
+        default: "2015q1"
+permissions:
+  contents: read
+jobs:
+  schema:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - run: python -m pytest tests/test_sec_inspect.py -q
+      - name: Inspect schema
+        env:
+          SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
+        run: python -m swing_bot.sec_inspect "${{ inputs.quarter }}"
