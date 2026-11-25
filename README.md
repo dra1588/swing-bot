@@ -1,3 +1,7 @@
+> **H1 (daily single-stock trend following) was dropped on 2026-11-25:** it failed development gates 2 and 5
+> (see `docs/PREREGISTRATION.md` v1.3). Its workflows (`swing-daily`, `swing-oos`) must not be enabled.
+> **H2 (monthly tactical asset allocation)** is drafted in `docs/PREREGISTRATION_H2.md`, awaiting approval. No H2 code yet.
+
 # swing-bot
 
 Paper-only daily-bar swing strategy with preregistered pass/fail rules. See `docs/PREREGISTRATION.md`.
