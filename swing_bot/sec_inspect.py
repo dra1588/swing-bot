@@ -16,7 +16,7 @@ URLS = ["https://www.sec.gov/files/structureddata/data/form-345/{q}_form345.zip"
 
 
 def fetch(quarter: str, session=None) -> bytes:
-    ua = os.environ.get("SEC_USER_AGENT", "swing-bot-research no-reply@users.noreply.github.com")
+    ua = os.environ.get("SEC_USER_AGENT") or "swing-bot-research no-reply@users.noreply.github.com"  # unset repo variable arrives as ""
     s = session or requests.Session()
     s.headers.update({"User-Agent": ua, "Accept-Encoding": "gzip, deflate"})
     errors = []

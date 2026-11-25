@@ -37,3 +37,18 @@ def test_fetch_declares_user_agent_and_tries_fallback_urls(monkeypatch):
     blob = sec_inspect.fetch("2015q1", session=S())
     assert blob[:2] == b"PK" and len(seen) == 2
     assert all(h["User-Agent"] == "test-project test@example.invalid" for _, h in seen)
+
+
+def test_blank_user_agent_variable_falls_back_to_a_declared_default(monkeypatch):
+    monkeypatch.setenv("SEC_USER_AGENT", "")
+    seen = []
+
+    class R:
+        status_code, content = 200, make_zip()
+
+    class S:
+        headers = {}
+        def get(self, url, timeout=0):
+            seen.append(dict(self.headers)); return R()
+    sec_inspect.fetch("2015q1", session=S())
+    assert seen[0]["User-Agent"].strip() != ""
