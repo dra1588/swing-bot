@@ -1,0 +1,29 @@
+name: swing-oos
+# SINGLE-USE. Runs the preregistered out-of-sample test once and commits results/oos_result.json.
+# A second run is refused by the code. Only start this after the code is frozen and approved.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "RUN OOS ONCE" to confirm'
+        required: true
+permissions:
+  contents: write
+concurrency:
+  group: swing-oos
+  cancel-in-progress: false
+jobs:
+  oos:
+    if: ${{ inputs.confirm == 'RUN OOS ONCE' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - run: python -m pytest tests -q
+      - run: python -m swing_bot.report --oos --i-approve-single-oos-run
+      - run: |
+          git config user.name "swing-bot"; git config user.email "swing-bot@users.noreply.github.com"
+          git add results/oos_result.json && git commit -m "OOS result (single run)" && git push

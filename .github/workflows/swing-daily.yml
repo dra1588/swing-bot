@@ -1,0 +1,33 @@
+name: swing-daily
+# PAPER ONLY. Runs after the US close on weekdays. Scheduled runs can be delayed by GitHub (no SLA); that is fine
+# for daily bars. Orders are day orders queued for the next open. A halt fails the run, which emails you.
+on:
+  schedule:
+    - cron: "43 22 * * 1-5"      # 22:43 UTC, a non-round minute to avoid the busiest scheduler slots
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: swing-daily
+  cancel-in-progress: false
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - name: Run daily paper job
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          SWING_KILL: ${{ vars.SWING_KILL }}
+        run: python -m swing_bot.paper
+      - name: Save state and ledger (also after a halt, so the halt reason is kept)
+        if: always()
+        run: |
+          git config user.name "swing-bot"; git config user.email "swing-bot@users.noreply.github.com"
+          git add state/state.json state/ledger.sqlite3 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "state: $(date -u +%F)" && git push)

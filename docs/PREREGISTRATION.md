@@ -75,3 +75,16 @@ These make section 2 and 3 precise. They add no tuning freedom.
 - Entry needs close > 100-day average, ATR14 > 0 and SPY close > its 200-day average. Exit on close < 100-day average or close < highest close since entry - 2 x ATR14.
 - SPY and QQQ are tradable like any stock. Gates are evaluated on trades closed in the out-of-sample window only.
 - Gate 5 (robustness: +-20% on each parameter, and both halves of the out-of-sample window) is a separate script that is still to be written; no result may be reported as passing until it exists.
+
+---
+## v1.2 definitions (25 Nov 2026, written before any real market data was fetched or run)
+- Data: Yahoo Finance daily bars via yfinance with auto_adjust=True (split and dividend adjusted OHLC), cached with a
+  SHA-256 and fetch timestamp. A gap longer than 5 business days, NaN, non-positive or inconsistent prices abort the run.
+- Development window 2010-01-01 to 2019-12-31. Out-of-sample window 2020-01-01 to 2026-11-20 inclusive, run once.
+  The single run is enforced in code: `results/oos_result.json` is written once and a second run is refused.
+- Gate 5 "holds" means, for a variant or sub-period: mean net trade return > 0 AND strategy Sharpe > SPY buy-and-hold
+  Sharpe over the same dates. All of these must hold: each of trend_window, market_window, atr_window, atr_mult at
+  x0.8 and x1.2 (windows rounded to whole days, other parameters unchanged), and both halves of the out-of-sample
+  window (2020-01-01 to 2023-06-30, and 2023-07-01 to 2026-11-20).
+- Universe survivorship: the list is as of 1 Jan 2020 while the development window starts in 2010, so the
+  development results are biased upward. Only the out-of-sample result counts.
