@@ -1,6 +1,6 @@
 > **H1 (daily single-stock trend following) was dropped on 2026-11-25:** it failed development gates 2 and 5
 > (see `docs/PREREGISTRATION.md` v1.3). Its workflows (`swing-daily`, `swing-oos`) must not be enabled.
-> **H2 (monthly tactical asset allocation)** is drafted in `docs/PREREGISTRATION_H2.md`, awaiting approval. No H2 code yet.
+> **H2 (monthly tactical asset allocation)** is drafted in `docs/PREREGISTRATION_H2.md`, approved 2026-11-25. Code: `swing_bot/h2.py`, `swing_bot/h2_report.py`; workflows `h2-dev` (repeatable) and `h2-holdout` (single use, typed confirmation). Holdout NOT yet run.
 
 # swing-bot
 

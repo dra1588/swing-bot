@@ -1,0 +1,29 @@
+name: h2-holdout
+# SINGLE-USE. Runs the preregistered H2 holdout (2017-01-01..2026-11-20) once and commits
+# results/h2_holdout_result.json. A second run is refused by the code. Start only after the dev review is approved.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "RUN H2 HOLDOUT ONCE" to confirm'
+        required: true
+permissions:
+  contents: write
+concurrency:
+  group: h2-holdout
+  cancel-in-progress: false
+jobs:
+  holdout:
+    if: ${{ inputs.confirm == 'RUN H2 HOLDOUT ONCE' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - run: python -m pytest tests -q
+      - run: python -m swing_bot.h2_report --holdout --i-approve-single-holdout-run
+      - run: |
+          git config user.name "swing-bot"; git config user.email "swing-bot@users.noreply.github.com"
+          git add results/h2_holdout_result.json && git commit -m "H2 holdout result (single run)" && git push
