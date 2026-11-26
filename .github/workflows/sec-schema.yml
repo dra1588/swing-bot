@@ -22,5 +22,5 @@ jobs:
       - run: python -m pytest tests/test_sec_inspect.py -q
       - name: Inspect schema
         env:
-          SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
+          SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT || secrets.SEC_USER_AGENT }}
         run: python -m swing_bot.sec_inspect "${{ inputs.quarter }}"

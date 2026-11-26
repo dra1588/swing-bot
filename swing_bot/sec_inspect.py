@@ -16,7 +16,12 @@ URLS = ["https://www.sec.gov/files/structureddata/data/form-345/{q}_form345.zip"
 
 
 def fetch(quarter: str, session=None) -> bytes:
-    ua = os.environ.get("SEC_USER_AGENT") or "swing-bot-research no-reply@users.noreply.github.com"  # unset repo variable arrives as ""
+    ua = (os.environ.get("SEC_USER_AGENT") or "").strip()
+    if not ua:
+        # An unset GitHub variable arrives as "". Never call the SEC without a declared User-Agent: it answers 403
+        # and repeated bad requests can get the IP limited.
+        raise SystemExit("SEC_USER_AGENT is empty. Set it (project name + contact) as an Actions variable or secret; "
+                         "no request was made to the SEC.")
     s = session or requests.Session()
     s.headers.update({"User-Agent": ua, "Accept-Encoding": "gzip, deflate"})
     errors = []
